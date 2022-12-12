@@ -3,9 +3,12 @@ package com.raf.nwpdomaci3.services;
 import com.raf.nwpdomaci3.domain.dto.user.UserCreateDto;
 import com.raf.nwpdomaci3.domain.dto.user.UserDto;
 import com.raf.nwpdomaci3.domain.dto.user.UserUpdateDto;
+import com.raf.nwpdomaci3.domain.entities.Role;
+import com.raf.nwpdomaci3.domain.entities.RoleType;
 import com.raf.nwpdomaci3.domain.entities.User;
 import com.raf.nwpdomaci3.domain.mapper.UserMapper;
 import com.raf.nwpdomaci3.repository.UserRepository;
+import com.raf.nwpdomaci3.utils.PermissionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -30,6 +33,9 @@ public class UserService implements UserDetailsService {
     }
 
     public UserDto createUser(UserCreateDto userCreateDto) {
+        if(!PermissionUtils.hasPermission(RoleType.CAN_CREATE))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, PermissionUtils.permissionMessage);
+
         User user = UserMapper.INSTANCE.userCreateDtoToUser(userCreateDto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
@@ -37,22 +43,35 @@ public class UserService implements UserDetailsService {
     }
 
     public List<UserDto> findAllUsers() {
+        if(!PermissionUtils.hasPermission(RoleType.CAN_READ))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, PermissionUtils.permissionMessage);
+
+        System.out.println(PermissionUtils.hasPermission(RoleType.CAN_READ));
         return userRepository.findAll().stream().map(UserMapper.INSTANCE::userToUserDto).collect(Collectors.toList());
     }
 
     public UserDto findUserById(Long id) {
+        if(!PermissionUtils.hasPermission(RoleType.CAN_READ))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, PermissionUtils.permissionMessage);
+
         Optional<User> user = userRepository.findById(id);
         return user.map(UserMapper.INSTANCE::userToUserDto)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "invalid user id"));
     }
 
     public UserDto findUserByEmail(String email) {
+        if(!PermissionUtils.hasPermission(RoleType.CAN_READ))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, PermissionUtils.permissionMessage);
+
         Optional<User> user = userRepository.findByEmail(email);
         return user.map(UserMapper.INSTANCE::userToUserDto)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "invalid email"));
     }
 
     public UserDto updateUserById(Long id, UserUpdateDto userUpdateDto) {
+        if(!PermissionUtils.hasPermission(RoleType.CAN_UPDATE))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, PermissionUtils.permissionMessage);
+
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "invalid id"));
 
@@ -61,6 +80,9 @@ public class UserService implements UserDetailsService {
     }
 
     public void deleteUserById(Long id) {
+        if(!PermissionUtils.hasPermission(RoleType.CAN_DELETE))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, PermissionUtils.permissionMessage);
+
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "invalid id"));
 
@@ -73,6 +95,7 @@ public class UserService implements UserDetailsService {
         if(!myUser.isPresent())
             throw new UsernameNotFoundException("User name "+email+" not found");
 
-        return new org.springframework.security.core.userdetails.User(myUser.get().getEmail(), myUser.get().getPassword(), myUser.get().getRoles());
+        List<RoleType> roles = myUser.get().getRoles().stream().map(Role::getRole).collect(Collectors.toList());
+        return new org.springframework.security.core.userdetails.User(myUser.get().getEmail(), myUser.get().getPassword(), roles);
     }
 }
