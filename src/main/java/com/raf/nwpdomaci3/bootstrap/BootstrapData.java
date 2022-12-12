@@ -45,7 +45,8 @@ public class BootstrapData implements CommandLineRunner {
         userAdmin.setPassword(passwordEncoder.encode("admin"));
         userAdmin.setRoles(List.of(roleCreate, roleRead, roleUpdate, roleDelete));
 
-        roleRepository.saveAll(List.of(roleCreate, roleRead, roleUpdate, roleDelete));
+        //posto je u useru @Cascade(CascadeType.PERSIST) -> ne sme da se radi!
+//        roleRepository.saveAll(List.of(roleCreate, roleRead, roleUpdate, roleDelete));
         userRepository.save(userAdmin);
 
         System.out.println("DATA LOADED!");

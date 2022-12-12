@@ -46,7 +46,6 @@ public class UserService implements UserDetailsService {
         if(!PermissionUtils.hasPermission(RoleType.CAN_READ))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, PermissionUtils.permissionMessage);
 
-        System.out.println(PermissionUtils.hasPermission(RoleType.CAN_READ));
         return userRepository.findAll().stream().map(UserMapper.INSTANCE::userToUserDto).collect(Collectors.toList());
     }
 
@@ -60,9 +59,6 @@ public class UserService implements UserDetailsService {
     }
 
     public UserDto findUserByEmail(String email) {
-        if(!PermissionUtils.hasPermission(RoleType.CAN_READ))
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, PermissionUtils.permissionMessage);
-
         Optional<User> user = userRepository.findByEmail(email);
         return user.map(UserMapper.INSTANCE::userToUserDto)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "invalid email"));

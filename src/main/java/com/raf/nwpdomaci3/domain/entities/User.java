@@ -2,6 +2,7 @@ package com.raf.nwpdomaci3.domain.entities;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Cascade(org.hibernate.annotations.CascadeType.PERSIST)
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
