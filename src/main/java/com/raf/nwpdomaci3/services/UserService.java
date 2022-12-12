@@ -29,7 +29,7 @@ public class UserService implements UserDetailsService {
     }
 
     public UserDto createUser(CreateUserDto createUserDto) {
-        User user = UserMapper.INSTANCE.userDtoToUser(createUserDto);
+        User user = UserMapper.INSTANCE.userCreateDtoToUser(createUserDto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         return UserMapper.INSTANCE.userToUserDto(userRepository.save(user));
