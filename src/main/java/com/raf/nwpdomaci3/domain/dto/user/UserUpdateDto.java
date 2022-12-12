@@ -1,4 +1,4 @@
-package com.raf.nwpdomaci3.domain.dto;
+package com.raf.nwpdomaci3.domain.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,9 +9,8 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDto {
+public class UserUpdateDto {
 
-    private Long id;
     private String firstName;
     private String lastName;
     private String email;

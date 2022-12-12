@@ -1,6 +1,6 @@
 package com.raf.nwpdomaci3.utils;
 
-import com.raf.nwpdomaci3.domain.dto.UserDto;
+import com.raf.nwpdomaci3.domain.dto.user.UserDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

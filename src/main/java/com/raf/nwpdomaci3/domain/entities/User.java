@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -15,16 +16,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String firstName;
 
-    @Column
+    @Column(nullable = false)
     private String lastName;
 
-    @Column(unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column
+    @Column(nullable = false)
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -33,6 +34,6 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")
     )
-    private List<Role> roles;
+    private List<Role> roles = new ArrayList<>();
 
 }

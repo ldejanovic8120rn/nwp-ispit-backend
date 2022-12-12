@@ -1,7 +1,7 @@
 package com.raf.nwpdomaci3.controllers;
 
-import com.raf.nwpdomaci3.domain.dto.LoginRequest;
-import com.raf.nwpdomaci3.domain.dto.LoginResponse;
+import com.raf.nwpdomaci3.domain.dto.login.LoginRequest;
+import com.raf.nwpdomaci3.domain.dto.login.LoginResponse;
 import com.raf.nwpdomaci3.services.UserService;
 import com.raf.nwpdomaci3.utils.JwtUtil;
 import org.springframework.http.ResponseEntity;

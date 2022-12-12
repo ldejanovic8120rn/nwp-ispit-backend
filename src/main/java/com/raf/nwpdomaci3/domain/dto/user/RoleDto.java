@@ -1,4 +1,4 @@
-package com.raf.nwpdomaci3.domain.dto;
+package com.raf.nwpdomaci3.domain.dto.user;
 
 import com.raf.nwpdomaci3.domain.entities.RoleType;
 import lombok.AllArgsConstructor;

@@ -1,7 +1,8 @@
 package com.raf.nwpdomaci3.services;
 
-import com.raf.nwpdomaci3.domain.dto.CreateUserDto;
-import com.raf.nwpdomaci3.domain.dto.UserDto;
+import com.raf.nwpdomaci3.domain.dto.user.UserCreateDto;
+import com.raf.nwpdomaci3.domain.dto.user.UserDto;
+import com.raf.nwpdomaci3.domain.dto.user.UserUpdateDto;
 import com.raf.nwpdomaci3.domain.entities.User;
 import com.raf.nwpdomaci3.domain.mapper.UserMapper;
 import com.raf.nwpdomaci3.repository.UserRepository;
@@ -28,8 +29,8 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserDto createUser(CreateUserDto createUserDto) {
-        User user = UserMapper.INSTANCE.userCreateDtoToUser(createUserDto);
+    public UserDto createUser(UserCreateDto userCreateDto) {
+        User user = UserMapper.INSTANCE.userCreateDtoToUser(userCreateDto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         return UserMapper.INSTANCE.userToUserDto(userRepository.save(user));
@@ -51,15 +52,26 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "invalid email"));
     }
 
+    public UserDto updateUserById(Long id, UserUpdateDto userUpdateDto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "invalid id"));
+
+        user = UserMapper.INSTANCE.updateUser(user, userUpdateDto);
+        return UserMapper.INSTANCE.userToUserDto(userRepository.save(user));
+    }
+
     public void deleteUserById(Long id) {
-        userRepository.deleteById(id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "invalid id"));
+
+        userRepository.delete(user);
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> myUser = userRepository.findByEmail(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<User> myUser = userRepository.findByEmail(email);
         if(!myUser.isPresent())
-            throw new UsernameNotFoundException("User name "+username+" not found");
+            throw new UsernameNotFoundException("User name "+email+" not found");
 
         return new org.springframework.security.core.userdetails.User(myUser.get().getEmail(), myUser.get().getPassword(), myUser.get().getRoles());
     }
