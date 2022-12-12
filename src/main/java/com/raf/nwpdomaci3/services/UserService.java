@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -20,13 +21,17 @@ import java.util.stream.Collectors;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserDto createUser(CreateUserDto createUserDto) {
         User user = UserMapper.INSTANCE.userDtoToUser(createUserDto);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
         return UserMapper.INSTANCE.userToUserDto(userRepository.save(user));
     }
 
@@ -40,16 +45,22 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "invalid user id"));
     }
 
+    public UserDto findUserByEmail(String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+        return user.map(UserMapper.INSTANCE::userToUserDto)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "invalid email"));
+    }
+
     public void deleteUserById(Long id) {
         userRepository.deleteById(id);
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User myUser = userRepository.findByEmail(username);
-        if(myUser == null)
+        Optional<User> myUser = userRepository.findByEmail(username);
+        if(!myUser.isPresent())
             throw new UsernameNotFoundException("User name "+username+" not found");
 
-        return new org.springframework.security.core.userdetails.User(myUser.getEmail(), myUser.getPassword(), myUser.getRoles());
+        return new org.springframework.security.core.userdetails.User(myUser.get().getEmail(), myUser.get().getPassword(), myUser.get().getRoles());
     }
 }
