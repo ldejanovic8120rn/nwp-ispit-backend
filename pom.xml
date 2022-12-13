@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.raf</groupId>
-    <artifactId>nwp-domaci-3</artifactId>
+    <artifactId>nwp-domaci-3-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>nwp-domaci-3</name>
     <description>nwp-domaci-3</description>
