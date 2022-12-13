@@ -4,16 +4,13 @@ import com.raf.nwpdomaci3.domain.dto.user.UserCreateDto;
 import com.raf.nwpdomaci3.domain.dto.user.UserDto;
 import com.raf.nwpdomaci3.domain.dto.user.UserUpdateDto;
 import com.raf.nwpdomaci3.domain.entities.User;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.Named;
+import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Mapper
+@Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
 
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
