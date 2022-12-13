@@ -7,6 +7,7 @@ import com.raf.nwpdomaci3.domain.entities.Role;
 import com.raf.nwpdomaci3.domain.entities.RoleType;
 import com.raf.nwpdomaci3.domain.entities.User;
 import com.raf.nwpdomaci3.domain.mapper.UserMapper;
+import com.raf.nwpdomaci3.repository.RoleRepository;
 import com.raf.nwpdomaci3.repository.UserRepository;
 import com.raf.nwpdomaci3.utils.PermissionUtils;
 import org.springframework.http.HttpStatus;
@@ -25,10 +26,12 @@ import java.util.stream.Collectors;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -36,8 +39,11 @@ public class UserService implements UserDetailsService {
         if(!PermissionUtils.hasPermission(RoleType.CAN_CREATE))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, PermissionUtils.permissionMessage);
 
+        List<Role> roles = roleRepository.findAllByRoleIn(userCreateDto.getUserRoles().stream().map(RoleType::valueOf).collect(Collectors.toList()));
+
         User user = UserMapper.INSTANCE.userCreateDtoToUser(userCreateDto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(roles);
 
         return UserMapper.INSTANCE.userToUserDto(userRepository.save(user));
     }
@@ -68,10 +74,14 @@ public class UserService implements UserDetailsService {
         if(!PermissionUtils.hasPermission(RoleType.CAN_UPDATE))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, PermissionUtils.permissionMessage);
 
+        List<Role> roles = roleRepository.findAllByRoleIn(userUpdateDto.getUserRoles().stream().map(RoleType::valueOf).collect(Collectors.toList()));
+
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "invalid id"));
 
         user = UserMapper.INSTANCE.updateUser(user, userUpdateDto);
+        user.setRoles(roles);
+
         return UserMapper.INSTANCE.userToUserDto(userRepository.save(user));
     }
 

@@ -30,7 +30,7 @@ public class JwtUtil {
     public String generateToken(UserDto userDto){
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("roles", userDto.getRoles());
+        claims.put("roles", userDto.getUserRoles());
 
         return Jwts.builder()
                 .setClaims(claims)
