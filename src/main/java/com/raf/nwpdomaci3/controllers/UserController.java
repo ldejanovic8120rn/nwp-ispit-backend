@@ -7,6 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @CrossOrigin
 @RequestMapping("/api/users")
@@ -42,7 +45,11 @@ public class UserController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUserById(@PathVariable("id") Long id) {
         userService.deleteUserById(id);
-        return ResponseEntity.status(HttpStatus.OK).build();
+
+        Map<String, String> bodyMap = new HashMap<>();
+        bodyMap.put("message", "OK");
+
+        return ResponseEntity.status(HttpStatus.OK).body(bodyMap);
     }
 
 }
