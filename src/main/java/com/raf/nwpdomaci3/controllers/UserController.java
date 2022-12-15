@@ -46,10 +46,10 @@ public class UserController {
     public ResponseEntity<?> deleteUserById(@PathVariable("id") Long id) {
         userService.deleteUserById(id);
 
-        Map<String, String> bodyMap = new HashMap<>();
-        bodyMap.put("message", "OK");
+        Map<String, String> body = new HashMap<>();
+        body.put("message", "OK");
 
-        return ResponseEntity.status(HttpStatus.OK).body(bodyMap);
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
 }
