@@ -18,6 +18,7 @@ import com.raf.nwpispit.repository.MachineRepository;
 import com.raf.nwpispit.repository.MachineScheduleRepository;
 import com.raf.nwpispit.repository.UserRepository;
 import com.raf.nwpispit.utils.PermissionUtils;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -141,7 +142,7 @@ public class MachineService {
         checkMachineOwner(machine);
 
         MachineSchedule machineSchedule = new MachineSchedule();
-        machineSchedule.setScheduleDate(Date.from(Instant.ofEpochSecond(machineScheduleDto.getScheduleDate())));
+        machineSchedule.setScheduleDate(Date.from(Instant.ofEpochMilli(machineScheduleDto.getScheduleDate())));
         machineSchedule.setMachine(machine);
         machineSchedule.setAction(machineScheduleDto.getAction());
 
@@ -150,12 +151,15 @@ public class MachineService {
 
 //    @Transactional(dontRollbackOn = MachineException.class)
     @Scheduled(cron = "0 * * * * *")  //every minute
+    @SchedulerLock(name = "machineTasksScheduler")
     public void performScheduledTasks() {
         //one minute interval
         Date dateFrom = Date.from(Instant.now());
         Date dateTo = Date.from(Instant.ofEpochMilli(dateFrom.getTime() + 60000));
 
-        List<MachineSchedule> machineSchedules = machineScheduleRepository.findAllByScheduleDateBetweenAndExecuted(dateFrom, dateTo, false);
+        List<MachineSchedule> machineSchedules = machineScheduleRepository.findAllByScheduleDateBetween(dateFrom, dateTo);
+        System.out.println("scheduling");
+
     }
 
     private void checkPermission(MachineAction action) {

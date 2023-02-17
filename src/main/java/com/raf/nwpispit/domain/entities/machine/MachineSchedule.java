@@ -24,6 +24,4 @@ public class MachineSchedule {
     @Temporal(TemporalType.TIMESTAMP)
     private Date scheduleDate;
 
-    private boolean executed = false;
-
 }

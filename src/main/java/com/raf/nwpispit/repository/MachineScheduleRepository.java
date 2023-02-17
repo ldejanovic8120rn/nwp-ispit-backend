@@ -7,5 +7,6 @@ import java.util.Date;
 import java.util.List;
 
 public interface MachineScheduleRepository extends JpaRepository<MachineSchedule, Long> {
-    List<MachineSchedule> findAllByScheduleDateBetweenAndExecuted(Date dateFrom, Date dateTo, boolean executed);
+    List<MachineSchedule> findAllByScheduleDateBetween(Date dateFrom, Date dateTo);
+
 }
