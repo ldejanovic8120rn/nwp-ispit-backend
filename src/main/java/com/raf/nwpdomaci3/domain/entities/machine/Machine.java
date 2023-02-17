@@ -22,14 +22,14 @@ public class Machine {
     private MachineStatus status = MachineStatus.STOPPED;
 
     private String name;
-    private boolean active = false;
+    private boolean active = true;
     private boolean busy = false;
 
     @ManyToOne
     private User createdBy;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+    private Date createdDate;
 
     @Column
     @Version

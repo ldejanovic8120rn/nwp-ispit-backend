@@ -16,7 +16,7 @@ public interface MachineRepository extends JpaRepository<Machine, Long> {
             "and (m.createdBy.email = :email) " +
             "and (:machineName is null or m.name like %:machineName%) " +
             "and ((:statuses is null) or m.status in (:statuses)) " +
-            "and (cast(:dateFrom as date) is null or cast(:dateTo as date) is null or (m.createdAt between :dateFrom and :dateTo))"
+            "and (cast(:dateFrom as date) is null or cast(:dateTo as date) is null or (m.createdDate between :dateFrom and :dateTo))"
     )
     List<Machine> findAllMachinesByParams(String email, String machineName, List<MachineStatus> statuses, Date dateFrom, Date dateTo);
 
