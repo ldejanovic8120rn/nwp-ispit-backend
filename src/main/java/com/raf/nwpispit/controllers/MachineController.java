@@ -1,5 +1,6 @@
 package com.raf.nwpispit.controllers;
 
+import com.raf.nwpispit.domain.dto.machine.MachineScheduleDto;
 import com.raf.nwpispit.domain.entities.machine.MachineStatus;
 import com.raf.nwpispit.services.MachineService;
 import org.springframework.http.HttpStatus;
@@ -68,6 +69,12 @@ public class MachineController {
         body.put("message", "action accepted");
 
         return ResponseEntity.status(HttpStatus.OK).body(body);
+    }
+
+    @PostMapping("/schedule")
+    public ResponseEntity<?> scheduleTask(@RequestBody MachineScheduleDto machineScheduleDto) {
+        machineService.addScheduleTaskForMachine(machineScheduleDto);
+        return ResponseEntity.ok().build();
     }
 
 }

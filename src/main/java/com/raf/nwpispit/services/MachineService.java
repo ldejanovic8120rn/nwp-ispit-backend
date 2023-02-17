@@ -2,8 +2,10 @@ package com.raf.nwpispit.services;
 
 import com.raf.nwpispit.domain.dto.machine.MachineDto;
 import com.raf.nwpispit.domain.dto.machine.MachineQueueDto;
+import com.raf.nwpispit.domain.dto.machine.MachineScheduleDto;
 import com.raf.nwpispit.domain.entities.machine.Machine;
 import com.raf.nwpispit.domain.entities.machine.MachineAction;
+import com.raf.nwpispit.domain.entities.machine.MachineSchedule;
 import com.raf.nwpispit.domain.entities.machine.MachineStatus;
 import com.raf.nwpispit.domain.entities.user.RoleType;
 import com.raf.nwpispit.domain.entities.user.User;
@@ -11,7 +13,9 @@ import com.raf.nwpispit.domain.exceptions.MachineException;
 import com.raf.nwpispit.domain.exceptions.NotFoundException;
 import com.raf.nwpispit.domain.exceptions.UserException;
 import com.raf.nwpispit.domain.mapper.MachineMapper;
+import com.raf.nwpispit.repository.MachineErrorRepository;
 import com.raf.nwpispit.repository.MachineRepository;
+import com.raf.nwpispit.repository.MachineScheduleRepository;
 import com.raf.nwpispit.repository.UserRepository;
 import com.raf.nwpispit.utils.PermissionUtils;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -29,11 +33,15 @@ import java.util.stream.Collectors;
 public class MachineService {
 
     private final MachineRepository machineRepository;
+    private final MachineScheduleRepository machineScheduleRepository;
+    private final MachineErrorRepository machineErrorRepository;
     private final UserRepository userRepository;
     private final AmqpTemplate rabbitTemplate;
 
-    public MachineService(MachineRepository machineRepository, UserRepository userRepository, AmqpTemplate rabbitTemplate) {
+    public MachineService(MachineRepository machineRepository, MachineScheduleRepository machineScheduleRepository, MachineErrorRepository machineErrorRepository, UserRepository userRepository, AmqpTemplate rabbitTemplate) {
         this.machineRepository = machineRepository;
+        this.machineScheduleRepository = machineScheduleRepository;
+        this.machineErrorRepository = machineErrorRepository;
         this.userRepository = userRepository;
         this.rabbitTemplate = rabbitTemplate;
     }
@@ -120,6 +128,32 @@ public class MachineService {
         }
 
         sendToQueue(machine.getId(), SecurityContextHolder.getContext().getAuthentication().getName(), action);
+    }
+
+    @Transactional
+    public void addScheduleTaskForMachine(MachineScheduleDto machineScheduleDto) {
+        checkPermission(machineScheduleDto.getAction());
+
+        Machine machine = machineRepository.findById(machineScheduleDto.getId())
+                .orElseThrow(() -> new NotFoundException("invalid machine id"));
+
+        checkMachineOwner(machine);
+
+        MachineSchedule machineSchedule = new MachineSchedule();
+        machineSchedule.setScheduleDate(Date.from(Instant.ofEpochSecond(machineScheduleDto.getScheduleDate())));
+        machineSchedule.setMachine(machine);
+        machineSchedule.setAction(machineScheduleDto.getAction());
+
+        machineScheduleRepository.save(machineSchedule);
+    }
+
+    private void checkPermission(MachineAction action) {
+        if(action == MachineAction.START)
+            PermissionUtils.checkRole(RoleType.CAN_START_MACHINE);
+        if(action == MachineAction.STOP)
+            PermissionUtils.checkRole(RoleType.CAN_STOP_MACHINE);
+        if(action == MachineAction.RESTART)
+            PermissionUtils.checkRole(RoleType.CAN_RESTART_MACHINE);
     }
 
     private void checkMachineOwner(Machine machine) {

@@ -9,21 +9,21 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
-public class MachineError {
+public class MachineSchedule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String message;
-
     @Enumerated(EnumType.STRING)
-    private MachineAction machineAction;
+    private MachineAction action;
 
     @ManyToOne
     private Machine machine;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date dateError;
+    private Date scheduleDate;
+
+    private boolean executed = false;
 
 }
