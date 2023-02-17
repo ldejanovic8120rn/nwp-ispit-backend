@@ -20,6 +20,7 @@ import com.raf.nwpispit.repository.UserRepository;
 import com.raf.nwpispit.utils.PermissionUtils;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -145,6 +146,16 @@ public class MachineService {
         machineSchedule.setAction(machineScheduleDto.getAction());
 
         machineScheduleRepository.save(machineSchedule);
+    }
+
+//    @Transactional(dontRollbackOn = MachineException.class)
+    @Scheduled(cron = "0 * * * * *")  //every minute
+    public void performScheduledTasks() {
+        //one minute interval
+        Date dateFrom = Date.from(Instant.now());
+        Date dateTo = Date.from(Instant.ofEpochMilli(dateFrom.getTime() + 60000));
+
+        List<MachineSchedule> machineSchedules = machineScheduleRepository.findAllByScheduleDateBetweenAndExecuted(dateFrom, dateTo, false);
     }
 
     private void checkPermission(MachineAction action) {
