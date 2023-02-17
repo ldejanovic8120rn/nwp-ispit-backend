@@ -1,12 +1,12 @@
 package com.raf.nwpdomaci3.repository;
 
-import com.raf.nwpdomaci3.domain.entities.Role;
-import com.raf.nwpdomaci3.domain.entities.RoleType;
-import org.springframework.data.jpa.repository.support.JpaRepositoryImplementation;
+import com.raf.nwpdomaci3.domain.entities.user.Role;
+import com.raf.nwpdomaci3.domain.entities.user.RoleType;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface RoleRepository extends JpaRepositoryImplementation<Role, Long> {
+public interface RoleRepository extends JpaRepository<Role, Long> {
 
     List<Role> findAllByRoleIn(List<RoleType> roles);
 

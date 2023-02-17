@@ -1,8 +1,8 @@
 package com.raf.nwpdomaci3.bootstrap;
 
-import com.raf.nwpdomaci3.domain.entities.Role;
-import com.raf.nwpdomaci3.domain.entities.RoleType;
-import com.raf.nwpdomaci3.domain.entities.User;
+import com.raf.nwpdomaci3.domain.entities.user.Role;
+import com.raf.nwpdomaci3.domain.entities.user.RoleType;
+import com.raf.nwpdomaci3.domain.entities.user.User;
 import com.raf.nwpdomaci3.repository.RoleRepository;
 import com.raf.nwpdomaci3.repository.UserRepository;
 import com.sun.tools.javac.util.List;

@@ -1,6 +1,6 @@
 package com.raf.nwpdomaci3.utils;
 
-import com.raf.nwpdomaci3.domain.entities.RoleType;
+import com.raf.nwpdomaci3.domain.entities.user.RoleType;
 import com.raf.nwpdomaci3.domain.exceptions.PermissionException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;

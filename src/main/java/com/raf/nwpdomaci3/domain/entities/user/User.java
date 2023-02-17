@@ -1,5 +1,6 @@
-package com.raf.nwpdomaci3.domain.entities;
+package com.raf.nwpdomaci3.domain.entities.user;
 
+import com.raf.nwpdomaci3.domain.entities.machine.Machine;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Cascade;
@@ -7,7 +8,6 @@ import org.hibernate.annotations.Cascade;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -38,5 +38,8 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")
     )
     private List<Role> roles = new ArrayList<>();
+
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Machine> machines = new ArrayList<>();
 
 }

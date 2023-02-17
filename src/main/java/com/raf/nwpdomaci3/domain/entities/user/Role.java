@@ -1,4 +1,4 @@
-package com.raf.nwpdomaci3.domain.entities;
+package com.raf.nwpdomaci3.domain.entities.user;
 
 import lombok.Getter;
 import lombok.Setter;
