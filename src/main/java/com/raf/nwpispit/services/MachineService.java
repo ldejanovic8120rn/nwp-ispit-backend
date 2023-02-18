@@ -1,15 +1,11 @@
 package com.raf.nwpispit.services;
 
-import com.raf.nwpispit.domain.dto.machine.MachineDto;
-import com.raf.nwpispit.domain.dto.machine.MachineErrorDto;
-import com.raf.nwpispit.domain.dto.machine.MachineQueueDto;
-import com.raf.nwpispit.domain.dto.machine.MachineScheduleDto;
+import com.raf.nwpispit.domain.dto.machine.*;
 import com.raf.nwpispit.domain.entities.machine.*;
 import com.raf.nwpispit.domain.entities.user.RoleType;
 import com.raf.nwpispit.domain.entities.user.User;
 import com.raf.nwpispit.domain.exceptions.MachineException;
 import com.raf.nwpispit.domain.exceptions.NotFoundException;
-import com.raf.nwpispit.domain.exceptions.UserException;
 import com.raf.nwpispit.domain.mapper.MachineMapper;
 import com.raf.nwpispit.repository.MachineErrorRepository;
 import com.raf.nwpispit.repository.MachineRepository;
@@ -25,7 +21,6 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 @Repository
-public interface MachineRepository extends JpaRepository<Machine, Long> {
+public interface MachineRepository extends JpaRepository<Machine, Long>{
 
 //    @Query("select m from Machine m where m.active = true " +
 //            "and (m.createdBy.email = :email) " +

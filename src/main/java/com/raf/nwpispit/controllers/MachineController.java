@@ -31,12 +31,6 @@ public class MachineController {
         return ResponseEntity.ok(machineService.searchMachines(name, statusList, dateFrom, dateTo));
     }
 
-    @PostMapping("/filter")
-    public ResponseEntity<?> searchMachinesByFilter() {
-
-        return null;
-    }
-
     @PostMapping("/create/{name}")
     public ResponseEntity<?> createMachine(@PathVariable("name") String name) {
         return ResponseEntity.ok(machineService.createMachine(name));
