@@ -10,12 +10,12 @@ import com.raf.nwpispit.repository.MachineRepository;
 import com.raf.nwpispit.repository.MachineScheduleRepository;
 import com.raf.nwpispit.repository.RoleRepository;
 import com.raf.nwpispit.repository.UserRepository;
-import com.sun.tools.javac.util.List;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 
 @Component
@@ -70,6 +70,18 @@ public class BootstrapData implements CommandLineRunner {
         Role roleCanRestartMachine = new Role();
         roleCanRestartMachine.setRole(RoleType.CAN_RESTART_MACHINE);
 
+        java.util.List<Role> roles = new ArrayList<>();
+        roles.add(roleCreate);
+        roles.add(roleRead);
+        roles.add(roleUpdate);
+        roles.add(roleDelete);
+        roles.add(roleCanSearchMachine);
+        roles.add(roleCanCreateMachine);
+        roles.add(roleCanDestroyMachine);
+        roles.add(roleCanStartMachine);
+        roles.add(roleCanStopMachine);
+        roles.add(roleCanRestartMachine);
+
 
         //MACHINES
         Machine machine1 = new Machine();
@@ -82,16 +94,18 @@ public class BootstrapData implements CommandLineRunner {
         machine2.setCreatedBy(userAdmin);
         machine2.setCreatedDate(Date.from(Instant.now()));
 
+        java.util.List<Machine> machines = new ArrayList<>();
+        machines.add(machine1);
+        machines.add(machine2);
+
 
         //SETTING TO USER
         userAdmin.setFirstName("Admin");
         userAdmin.setLastName("Admin");
         userAdmin.setEmail("admin@admin.com");
         userAdmin.setPassword(passwordEncoder.encode("admin"));
-        userAdmin.setRoles(List.of(roleCreate, roleRead, roleUpdate, roleDelete, roleCanSearchMachine, roleCanCreateMachine,
-                roleCanDestroyMachine, roleCanStartMachine, roleCanStopMachine, roleCanRestartMachine
-        ));
-        userAdmin.setMachines(List.of(machine1, machine2));
+        userAdmin.setRoles(roles);
+        userAdmin.setMachines(machines);
 
         MachineSchedule schedule = new MachineSchedule();
         schedule.setAction(MachineAction.START);

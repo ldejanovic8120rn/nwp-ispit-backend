@@ -28,8 +28,13 @@ public class MachineController {
                                          @RequestParam(required = false) Long dateTo
     ) {
 
-        System.out.println(statusList);
         return ResponseEntity.ok(machineService.searchMachines(name, statusList, dateFrom, dateTo));
+    }
+
+    @PostMapping("/filter")
+    public ResponseEntity<?> searchMachinesByFilter() {
+
+        return null;
     }
 
     @PostMapping("/create/{name}")
