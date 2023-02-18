@@ -1,10 +1,13 @@
 package com.raf.nwpispit.bootstrap;
 
 import com.raf.nwpispit.domain.entities.machine.Machine;
+import com.raf.nwpispit.domain.entities.machine.MachineAction;
+import com.raf.nwpispit.domain.entities.machine.MachineSchedule;
 import com.raf.nwpispit.domain.entities.user.Role;
 import com.raf.nwpispit.domain.entities.user.RoleType;
 import com.raf.nwpispit.domain.entities.user.User;
 import com.raf.nwpispit.repository.MachineRepository;
+import com.raf.nwpispit.repository.MachineScheduleRepository;
 import com.raf.nwpispit.repository.RoleRepository;
 import com.raf.nwpispit.repository.UserRepository;
 import com.sun.tools.javac.util.List;
@@ -20,12 +23,14 @@ public class BootstrapData implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final MachineRepository machineRepository;
+    private final MachineScheduleRepository machineScheduleRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public BootstrapData(UserRepository userRepository, MachineRepository machineRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public BootstrapData(UserRepository userRepository, MachineRepository machineRepository, MachineScheduleRepository machineScheduleRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.machineRepository = machineRepository;
+        this.machineScheduleRepository = machineScheduleRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -51,19 +56,19 @@ public class BootstrapData implements CommandLineRunner {
         roleCanSearchMachine.setRole(RoleType.CAN_SEARCH_MACHINE);
 
         Role roleCanCreateMachine = new Role();
-        roleCanSearchMachine.setRole(RoleType.CAN_CREATE_MACHINE);
+        roleCanCreateMachine.setRole(RoleType.CAN_CREATE_MACHINE);
 
         Role roleCanDestroyMachine = new Role();
-        roleCanSearchMachine.setRole(RoleType.CAN_DESTROY_MACHINE);
+        roleCanDestroyMachine.setRole(RoleType.CAN_DESTROY_MACHINE);
 
         Role roleCanStartMachine = new Role();
-        roleCanSearchMachine.setRole(RoleType.CAN_START_MACHINE);
+        roleCanStartMachine.setRole(RoleType.CAN_START_MACHINE);
 
         Role roleCanStopMachine = new Role();
-        roleCanSearchMachine.setRole(RoleType.CAN_STOP_MACHINE);
+        roleCanStopMachine.setRole(RoleType.CAN_STOP_MACHINE);
 
         Role roleCanRestartMachine = new Role();
-        roleCanSearchMachine.setRole(RoleType.CAN_RESTART_MACHINE);
+        roleCanRestartMachine.setRole(RoleType.CAN_RESTART_MACHINE);
 
 
         //MACHINES
@@ -88,11 +93,15 @@ public class BootstrapData implements CommandLineRunner {
         ));
         userAdmin.setMachines(List.of(machine1, machine2));
 
-
+        MachineSchedule schedule = new MachineSchedule();
+        schedule.setAction(MachineAction.START);
+        schedule.setMachine(machine1);
+        schedule.setScheduleDate(Date.from(Instant.ofEpochMilli(System.currentTimeMillis() + 2 * 60000)));  //after 2 min
 
         //posto je u useru @Cascade(CascadeType.PERSIST) -> ne sme da se radi!
 //        roleRepository.saveAll(List.of(roleCreate, roleRead, roleUpdate, roleDelete));
         userRepository.save(userAdmin);
+        machineScheduleRepository.save(schedule);
 
         System.out.println("DATA LOADED!");
     }

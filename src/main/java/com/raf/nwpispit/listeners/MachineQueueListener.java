@@ -36,6 +36,7 @@ public class MachineQueueListener {
         ObjectInputStream is = new ObjectInputStream(in);
 
         MachineQueueDto machineQueueDto = (MachineQueueDto) is.readObject();
+        System.out.println("Queue starting: " + machineQueueDto.getEmail() + " - " + machineQueueDto.getId());
         if(machineQueueDto.getMachineAction() == MachineAction.START) {
             startStopMachine(machineQueueDto.getId(), machineQueueDto.getEmail(), MachineStatus.RUNNING);
         }

@@ -18,7 +18,7 @@ public class MachineError {
     private String message;
 
     @Enumerated(EnumType.STRING)
-    private MachineAction machineAction;
+    private MachineAction action;
 
     @ManyToOne
     private Machine machine;

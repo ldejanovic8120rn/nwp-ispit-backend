@@ -1,12 +1,10 @@
 package com.raf.nwpispit.services;
 
 import com.raf.nwpispit.domain.dto.machine.MachineDto;
+import com.raf.nwpispit.domain.dto.machine.MachineErrorDto;
 import com.raf.nwpispit.domain.dto.machine.MachineQueueDto;
 import com.raf.nwpispit.domain.dto.machine.MachineScheduleDto;
-import com.raf.nwpispit.domain.entities.machine.Machine;
-import com.raf.nwpispit.domain.entities.machine.MachineAction;
-import com.raf.nwpispit.domain.entities.machine.MachineSchedule;
-import com.raf.nwpispit.domain.entities.machine.MachineStatus;
+import com.raf.nwpispit.domain.entities.machine.*;
 import com.raf.nwpispit.domain.entities.user.RoleType;
 import com.raf.nwpispit.domain.entities.user.User;
 import com.raf.nwpispit.domain.exceptions.MachineException;
@@ -27,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,10 +50,12 @@ public class MachineService {
     @Transactional
     public List<MachineDto> searchMachines(String name, List<MachineStatus> statusList, Long dateFrom, Long dateTo) {
         PermissionUtils.checkRole(RoleType.CAN_SEARCH_MACHINE);
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        List<Machine> machines = machineRepository.findAllMachinesByParams(email, name, statusList,
-                Date.from(Instant.ofEpochMilli(dateFrom)), Date.from(Instant.ofEpochMilli(dateTo)));
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Date dateFromParam = dateFrom == null ? null : Date.from(Instant.ofEpochMilli(dateFrom));
+        Date dateToParam = dateTo == null ? null : Date.from(Instant.ofEpochMilli(dateTo));
+
+        List<Machine> machines = machineRepository.findAllMachinesByParams(email, name, statusList, dateFromParam, dateToParam);
         return machines.stream().map(MachineMapper.INSTANCE::machineToMachineDto).collect(Collectors.toList());
     }
 
@@ -77,7 +78,6 @@ public class MachineService {
         PermissionUtils.checkRole(RoleType.CAN_DESTROY_MACHINE);
 
         Machine machine = machineRepository.findById(id).orElseThrow(() -> new NotFoundException("invalid id for machine"));
-        checkMachineOwner(machine);
 
         if(machine.isBusy())
             throw new MachineException("machine is busy");
@@ -95,25 +95,60 @@ public class MachineService {
         }
     }
 
+    public List<MachineErrorDto> getErrors() {
+        List<MachineError> errors = machineErrorRepository.findAll();
+        return errors.stream().map(MachineMapper.INSTANCE::machineErrorToMachineErrorDto).collect(Collectors.toList());
+    }
+
     public void startMachine(Long id) {
         PermissionUtils.checkRole(RoleType.CAN_START_MACHINE);
-        performAnActionForMachine(id, MachineStatus.STOPPED, MachineAction.START);
+        performAnActionForMachine(id, MachineStatus.STOPPED, MachineAction.START, SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     public void stopMachine(Long id) {
         PermissionUtils.checkRole(RoleType.CAN_STOP_MACHINE);
-        performAnActionForMachine(id, MachineStatus.RUNNING, MachineAction.STOP);
+        performAnActionForMachine(id, MachineStatus.RUNNING, MachineAction.STOP, SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     public void restartMachine(Long id) {
         PermissionUtils.checkRole(RoleType.CAN_RESTART_MACHINE);
-        performAnActionForMachine(id, MachineStatus.RUNNING, MachineAction.RESTART);
+        performAnActionForMachine(id, MachineStatus.RUNNING, MachineAction.RESTART, SecurityContextHolder.getContext().getAuthentication().getName());
+    }
+
+    @Transactional(dontRollbackOn = MachineException.class)
+    @Scheduled(cron = "0 * * * * *")  //every minute
+    @SchedulerLock(name = "machineTasksScheduler")
+    public void performScheduledTasks() {
+        System.out.println("Scheduling starts");
+
+        Date date = Date.from(Instant.now());
+        List<MachineSchedule> machineSchedules = machineScheduleRepository.findAllByScheduleDateBefore(date);
+        for(MachineSchedule machineSchedule: machineSchedules) {
+            String email = machineSchedule.getMachine().getCreatedBy().getEmail();
+            MachineAction action = machineSchedule.getAction();
+            MachineStatus requiredStatus = action == MachineAction.START ? MachineStatus.STOPPED : MachineStatus.RUNNING;
+
+            try {
+                System.out.println("performing action");
+                performAnActionForMachine(machineSchedule.getMachine().getId(), requiredStatus, action, email);
+            }
+            catch (MachineException e) {
+                MachineError error = new MachineError();
+                error.setMessage(e.getMessage());
+                error.setAction(action);
+                error.setMachine(machineSchedule.getMachine());
+                error.setDateError(date);
+
+                machineErrorRepository.save(error);
+            }
+        }
+
+        machineScheduleRepository.deleteAll(machineSchedules);
     }
 
     @Transactional
-    public void performAnActionForMachine(Long id, MachineStatus requiredStatus, MachineAction action) {
+    public void performAnActionForMachine(Long id, MachineStatus requiredStatus, MachineAction action, String email) {
         Machine machine = machineRepository.findById(id).orElseThrow(() -> new NotFoundException("invalid machine id"));
-        checkMachineOwner(machine);
 
         if(machine.isBusy())
             throw new MachineException("machine is busy");
@@ -129,17 +164,20 @@ public class MachineService {
             throw new MachineException("someone has overtaken you in action");
         }
 
-        sendToQueue(machine.getId(), SecurityContextHolder.getContext().getAuthentication().getName(), action);
+        sendToQueue(machine.getId(), email, action);
     }
 
     @Transactional
     public void addScheduleTaskForMachine(MachineScheduleDto machineScheduleDto) {
-        checkPermission(machineScheduleDto.getAction());
+        if(machineScheduleDto.getAction() == MachineAction.START)
+            PermissionUtils.checkRole(RoleType.CAN_START_MACHINE);
+        if(machineScheduleDto.getAction() == MachineAction.STOP)
+            PermissionUtils.checkRole(RoleType.CAN_STOP_MACHINE);
+        if(machineScheduleDto.getAction() == MachineAction.RESTART)
+            PermissionUtils.checkRole(RoleType.CAN_RESTART_MACHINE);
 
         Machine machine = machineRepository.findById(machineScheduleDto.getId())
                 .orElseThrow(() -> new NotFoundException("invalid machine id"));
-
-        checkMachineOwner(machine);
 
         MachineSchedule machineSchedule = new MachineSchedule();
         machineSchedule.setScheduleDate(Date.from(Instant.ofEpochMilli(machineScheduleDto.getScheduleDate())));
@@ -147,35 +185,6 @@ public class MachineService {
         machineSchedule.setAction(machineScheduleDto.getAction());
 
         machineScheduleRepository.save(machineSchedule);
-    }
-
-//    @Transactional(dontRollbackOn = MachineException.class)
-    @Scheduled(cron = "0 * * * * *")  //every minute
-    @SchedulerLock(name = "machineTasksScheduler")
-    public void performScheduledTasks() {
-        //one minute interval
-        Date dateFrom = Date.from(Instant.now());
-        Date dateTo = Date.from(Instant.ofEpochMilli(dateFrom.getTime() + 60000));
-
-        List<MachineSchedule> machineSchedules = machineScheduleRepository.findAllByScheduleDateBetween(dateFrom, dateTo);
-        System.out.println("scheduling");
-
-    }
-
-    private void checkPermission(MachineAction action) {
-        if(action == MachineAction.START)
-            PermissionUtils.checkRole(RoleType.CAN_START_MACHINE);
-        if(action == MachineAction.STOP)
-            PermissionUtils.checkRole(RoleType.CAN_STOP_MACHINE);
-        if(action == MachineAction.RESTART)
-            PermissionUtils.checkRole(RoleType.CAN_RESTART_MACHINE);
-    }
-
-    private void checkMachineOwner(Machine machine) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(!email.equals(machine.getCreatedBy().getEmail()))
-            throw new UserException("you aren't owner of this machine");
     }
 
     public void sendToQueue(Long id, String email, MachineAction machineAction) {

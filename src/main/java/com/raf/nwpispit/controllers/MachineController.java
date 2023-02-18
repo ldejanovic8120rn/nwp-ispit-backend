@@ -28,6 +28,7 @@ public class MachineController {
                                          @RequestParam(required = false) Long dateTo
     ) {
 
+        System.out.println(statusList);
         return ResponseEntity.ok(machineService.searchMachines(name, statusList, dateFrom, dateTo));
     }
 
@@ -75,6 +76,11 @@ public class MachineController {
     public ResponseEntity<?> scheduleTask(@RequestBody MachineScheduleDto machineScheduleDto) {
         machineService.addScheduleTaskForMachine(machineScheduleDto);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/errors")
+    public ResponseEntity<?> getErrors(@RequestBody MachineScheduleDto machineScheduleDto) {
+        return ResponseEntity.ok().body(machineService.getErrors());
     }
 
 }
