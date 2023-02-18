@@ -23,9 +23,9 @@ public class MachineController {
 
     @GetMapping
     public ResponseEntity<?> searchMachines(@RequestParam(required = false) String name,
-                                         @RequestParam(required = false) List<MachineStatus> statusList,
-                                         @RequestParam(required = false) Long dateFrom,
-                                         @RequestParam(required = false) Long dateTo
+                                            @RequestParam(required = false) List<MachineStatus> statusList,
+                                            @RequestParam(required = false) Long dateFrom,
+                                            @RequestParam(required = false) Long dateTo
     ) {
 
         return ResponseEntity.ok(machineService.searchMachines(name, statusList, dateFrom, dateTo));
