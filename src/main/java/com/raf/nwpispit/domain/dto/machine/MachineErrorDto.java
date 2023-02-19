@@ -9,6 +9,6 @@ public class MachineErrorDto {
     private Long id;
     private String message;
     private MachineAction action;
-    private MachineDto machineDto;
+    private MachineDto machine;
     private Long dateError;
 }

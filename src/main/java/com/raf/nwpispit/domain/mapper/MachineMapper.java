@@ -19,7 +19,7 @@ public interface MachineMapper {
     MachineDto machineToMachineDto(Machine machine);
 
     @Mapping(target="dateError", source="machineError", qualifiedByName = "getErrorDate")
-    @Mapping(target="machineDto", source="machineError", qualifiedByName = "getMachineDto")
+    @Mapping(target="machine", source="machineError", qualifiedByName = "getMachineDto")
     MachineErrorDto machineErrorToMachineErrorDto(MachineError machineError);
 
     @Named("getCreatedDate")
