@@ -78,7 +78,7 @@ public class MachineController {
     }
 
     @GetMapping("/errors")
-    public ResponseEntity<?> getErrors(@RequestBody MachineScheduleDto machineScheduleDto) {
+    public ResponseEntity<?> getErrors() {
         return ResponseEntity.ok().body(machineService.getErrors());
     }
 
